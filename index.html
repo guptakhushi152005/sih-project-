@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AGriVyn – AI-Powered Farm-to-Market Intelligence Platform</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              300: '#86efac',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            },
+            harvest: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
+
+  <!-- Top Controller Bar for Hackathon Judges & Evaluation -->
+  <header class="bg-slate-900 text-white text-xs px-4 py-2.5 flex flex-wrap items-center justify-between border-b border-slate-800 sticky top-0 z-50 shadow-md">
+    <div class="flex items-center space-x-3">
+      <div class="flex items-center space-x-1.5 font-bold tracking-wide cursor-pointer" onclick="navigateTo('landing')">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+        <span class="text-emerald-400 font-semibold text-sm">AGriVyn</span>
+        <span class="text-slate-400 hidden sm:inline">| Prototype Demo</span>
+      </div>
+      <span class="bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded-full font-medium text-[11px]">
+        Smart India Hackathon 2026
+      </span>
+    </div>
+
+    <div class="flex items-center space-x-2 my-1 sm:my-0">
+      <!-- Active Persona Switcher -->
+      <div class="bg-slate-800 p-0.5 rounded-lg flex items-center border border-slate-700">
+        <button id="persona-farmer-btn" onclick="switchPersona('farmer')" class="px-2.5 py-1 rounded-md text-xs font-medium transition-all bg-emerald-600 text-white shadow-sm flex items-center space-x-1">
+          <i data-lucide="user" class="w-3.5 h-3.5"></i>
+          <span>Farmer Mode</span>
+        </button>
+        <button id="persona-buyer-btn" onclick="switchPersona('buyer')" class="px-2.5 py-1 rounded-md text-xs font-medium transition-all text-slate-300 hover:text-white flex items-center space-x-1">
+          <i data-lucide="building-2" class="w-3.5 h-3.5"></i>
+          <span>Buyer Portal</span>
+        </button>
+      </div>
+
+      <!-- Direct Chat Quick Trigger -->
+      <button onclick="openChatView('Farmer-Buyer Deal Negotiation')" title="Direct Negotiation Chat" class="p-1.5 bg-emerald-950 text-emerald-300 hover:bg-emerald-900 border border-emerald-700/60 rounded-lg flex items-center space-x-1 font-semibold">
+        <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-400"></i>
+        <span class="text-[11px] hidden sm:inline">Direct Chat</span>
+      </button>
+
+      <!-- Viewport Mode Toggle -->
+      <div class="hidden md:flex items-center bg-slate-800 p-0.5 rounded-lg border border-slate-700">
+        <button id="view-phone-btn" onclick="toggleViewport('phone')" title="Mobile View" class="p-1 rounded bg-slate-700 text-white">
+          <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+        </button>
+        <button id="view-desktop-btn" onclick="toggleViewport('desktop')" title="Full Desktop View" class="p-1 rounded text-slate-400 hover:text-white">
+          <i data-lucide="maximize" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+
+      <!-- Language Toggle -->
+      <button onclick="toggleLanguage()" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md text-slate-300 flex items-center space-x-1 font-medium">
+        <i data-lucide="languages" class="w-3 h-3 text-emerald-400"></i>
+        <span id="lang-label">EN | हिन्दी</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- App Wrapper Container -->
+  <main id="app-container" class="max-w-md mx-auto min-h-[calc(100vh-45px)] bg-slate-50 transition-all duration-300 relative pb-20 shadow-xl overflow-x-hidden border-x border-slate-200">
+
+    <!-- Toast Notification Banner -->
+    <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2 text-xs font-medium border border-slate-700 transition-all duration-300 opacity-0 pointer-events-none transform -translate-y-4">
+      <i id="toast-icon" data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+      <span id="toast-message">Action successful</span>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 0: LANDING & WELCOME SCREEN -->
+    <!-- ============================================================== -->
+    <section id="view-landing" class="min-h-full flex flex-col justify-between p-6 bg-gradient-to-b from-emerald-900 via-emerald-950 to-slate-950 text-white">
+      <div class="pt-4">
+        <!-- Logo & Header -->
+        <div class="flex items-center space-x-3 mb-2">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30 ring-4 ring-emerald-500/20">
+            <svg class="w-7 h-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-3xl font-extrabold tracking-tight text-white flex items-center">
+              AGri<span class="text-emerald-400">Vyn</span>
+            </h1>
+            <p class="text-xs text-emerald-300/90 font-medium">Smart decisions from farm to market</p>
+          </div>
+        </div>
+
+        <!-- Tagline Banner -->
+        <div class="mt-3 inline-flex items-center space-x-2 bg-emerald-800/40 border border-emerald-700/50 rounded-full px-3 py-1 text-[11px] text-emerald-200">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <span>AI-Powered Farm-to-Market Intelligence Platform</span>
+        </div>
+
+        <!-- Feature Highlights Carousel / Cards -->
+        <div class="mt-5 space-y-2.5">
+          <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10">
+            <div class="flex items-start space-x-3">
+              <div class="p-2 rounded-xl bg-emerald-500/20 text-emerald-300">
+                <i data-lucide="trending-up" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-xs font-bold text-white">Direct Market Linkages & Price Discovery</h3>
+                <p class="text-[11px] text-slate-300 mt-0.5">Real-time APMC Mandi rates, verified bulk buyer bids, and net profit calculator.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10">
+            <div class="flex items-start space-x-3">
+              <div class="p-2 rounded-xl bg-emerald-500/20 text-emerald-300">
+                <i data-lucide="scan" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-xs font-bold text-white">Integrated AI Crop Health Diagnosis</h3>
+                <p class="text-[11px] text-slate-300 mt-0.5">Instant disease/pest detection with 94%+ diagnostic confidence & crop grading.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10">
+            <div class="flex items-start space-x-3">
+              <div class="p-2 rounded-xl bg-emerald-500/20 text-emerald-300">
+                <i data-lucide="message-circle" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-xs font-bold text-white">Direct Farmer ⇄ Buyer Deal Negotiation</h3>
+                <p class="text-[11px] text-slate-300 mt-0.5">Direct chat, price locking, and transparent order tracking with zero middlemen.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Message Quote -->
+        <div class="mt-4 p-3 rounded-xl bg-emerald-950/80 border border-emerald-600/30 text-center">
+          <p class="text-xs font-semibold text-emerald-300">
+            "Know your crop. Know the market. Find the right buyer."
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="mt-6 space-y-2.5">
+        <p class="text-center text-[11px] text-slate-400">Select persona to explore the interactive prototype:</p>
+        
+        <button onclick="loginAs('farmer')" class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white rounded-xl font-semibold text-xs shadow-lg shadow-emerald-900/40 flex items-center justify-center space-x-2 transition-all">
+          <i data-lucide="tractor" class="w-4 h-4"></i>
+          <span>Farmer Login (Ramesh - Meerut)</span>
+        </button>
+
+        <button onclick="loginAs('buyer')" class="w-full py-3 px-4 bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-white border border-slate-700 rounded-xl font-semibold text-xs shadow-lg flex items-center justify-center space-x-2 transition-all">
+          <i data-lucide="building" class="w-4 h-4"></i>
+          <span>Buyer Login (Sharma Agro Wholesaler)</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 1: FARMER DASHBOARD (HOME) -->
+    <!-- ============================================================== -->
+    <section id="view-farmer-home" class="hidden p-4 space-y-4">
+      
+      <!-- Farmer Top Header -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="relative">
+            <div class="w-11 h-11 rounded-full bg-emerald-100 border-2 border-emerald-600 flex items-center justify-center text-emerald-800 font-bold text-base">
+              R
+            </div>
+            <span class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+          </div>
+          <div>
+            <div class="flex items-center space-x-1">
+              <h2 class="text-base font-bold text-slate-900" id="farmer-name-greeting">Hello, Ramesh 👋</h2>
+            </div>
+            <p class="text-xs text-slate-500 flex items-center">
+              <i data-lucide="map-pin" class="w-3 h-3 mr-1 text-emerald-600"></i>
+              <span>Meerut, Uttar Pradesh</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <!-- Chat Button -->
+          <button onclick="openChatView('Farmer-Buyer Deal Negotiation')" class="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-emerald-600 shadow-sm transition" title="Direct Chat">
+            <i data-lucide="message-square" class="w-4 h-4"></i>
+          </button>
+          <!-- Quick Role Switch Pill -->
+          <button onclick="switchPersona('buyer')" title="Switch to Buyer View" class="p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold hover:bg-emerald-100 shadow-sm transition flex items-center space-x-1">
+            <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
+            <span class="text-[10px]">Buyer</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- HERO CARD: Today's Best Selling Opportunity -->
+      <div class="bg-gradient-to-br from-emerald-800 via-emerald-700 to-emerald-900 text-white rounded-2xl p-4 shadow-md relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-emerald-500/20 rounded-full blur-xl pointer-events-none"></div>
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-950/60 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-600/30">
+            TODAY'S BEST SELLING OPPORTUNITY
+          </span>
+          <span class="text-[11px] font-semibold text-emerald-200 flex items-center">
+            <i data-lucide="sparkles" class="w-3 h-3 mr-1 text-yellow-300"></i> AI Matched
+          </span>
+        </div>
+
+        <div class="mt-3 flex items-baseline justify-between">
+          <div>
+            <h3 class="text-xl font-extrabold tracking-tight">Wheat (Gehun - Sharbati)</h3>
+            <p class="text-xs text-emerald-200">Best Buyer: <span class="font-semibold text-white">Mandi/Bulk Buyer B (Sharma Agro)</span></p>
+          </div>
+          <div class="text-right">
+            <span class="text-2xl font-extrabold text-white">₹2,550</span>
+            <span class="text-xs text-emerald-200 block">/ Quintal</span>
+          </div>
+        </div>
+
+        <!-- Net Price Callout -->
+        <div class="mt-3 pt-3 border-t border-emerald-600/40 flex items-center justify-between text-xs">
+          <div>
+            <span class="text-emerald-200">Expected Net Price:</span>
+            <span class="font-bold text-white text-sm ml-1">₹2,450 / Qtl</span>
+            <span class="text-[10px] text-emerald-300 block">(After ₹100 estimated transport)</span>
+          </div>
+          <button onclick="navigateTo('smart-recommendation')" class="px-3.5 py-2 bg-white text-emerald-800 hover:bg-emerald-50 font-bold rounded-xl text-xs shadow transition flex items-center space-x-1">
+            <span>View Recommendation</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 6 QUICK ACTION CARDS -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Quick Actions</h3>
+          <span class="text-[11px] text-emerald-700 font-medium">6 Services Available</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2.5">
+          <!-- 1. My Crops -->
+          <button onclick="navigateTo('crop-listing')" class="bg-white p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:shadow-md transition text-left group flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg mb-2 group-hover:scale-110 transition">
+              🌱
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-800">My Crops</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">List & Manage</p>
+            </div>
+          </button>
+
+          <!-- 2. Market Prices -->
+          <button onclick="navigateTo('market-prices')" class="bg-white p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:shadow-md transition text-left group flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-lg mb-2 group-hover:scale-110 transition">
+              💰
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-800">Market Prices</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">Price Discovery</p>
+            </div>
+          </button>
+
+          <!-- 3. Find Buyers -->
+          <button onclick="navigateTo('find-buyers')" class="bg-white p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:shadow-md transition text-left group flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-lg mb-2 group-hover:scale-110 transition">
+              🏢
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-800">Find Buyers</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">Direct Linkage</p>
+            </div>
+          </button>
+
+          <!-- 4. AI Crop Scan -->
+          <button onclick="navigateTo('crop-health')" class="bg-white p-3 rounded-xl border-2 border-emerald-500/40 bg-emerald-50/30 hover:border-emerald-600 hover:shadow-md transition text-left group flex flex-col justify-between relative overflow-hidden">
+            <span class="absolute top-1 right-1 px-1 py-0.2 bg-emerald-600 text-white rounded text-[8px] font-bold">AI</span>
+            <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg mb-2 group-hover:scale-110 transition">
+              🤖
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-800">AI Crop Scan</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">Pest & Health</p>
+            </div>
+          </button>
+
+          <!-- 5. Weather -->
+          <button onclick="navigateTo('weather')" class="bg-white p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:shadow-md transition text-left group flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center text-lg mb-2 group-hover:scale-110 transition">
+              🌦️
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-800">Weather</p>
+              <p class="text-[10px] text-slate-500 mt-0.5">Agro Forecast</p>
+            </div>
+          </button>
+
+          <!-- 6. My Orders -->
+          <button onclick="navigateTo('my-orders')" class="bg-white p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:shadow-md transition text-left group flex flex-col justify-between">
+            <div class="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center text-lg mb-2 group-hover:scale-110 transition">
+              📦
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-800">My Orders</p>
+              <p class="text-[10px] text-slate-500 mt-0.5" id="active-orders-count">1 Active Offer</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- DEDICATED AI CROP HEALTH CARD -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm relative overflow-hidden">
+        <div class="flex items-start justify-between">
+          <div class="flex items-start space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shrink-0">
+              🔬
+            </div>
+            <div>
+              <div class="flex items-center space-x-1.5">
+                <h4 class="text-sm font-bold text-slate-900">AI CROP HEALTH</h4>
+                <span class="bg-emerald-100 text-emerald-800 text-[10px] font-semibold px-2 py-0.2 rounded-full">Vision AI</span>
+              </div>
+              <p class="text-xs text-slate-600 mt-0.5">Check your crop for diseases & pests before taking to market</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-3.5 flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs">
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span class="text-slate-600 font-medium">Last Scan: <strong class="text-slate-800">Wheat (Healthy ✓)</strong></span>
+          </div>
+          <button onclick="navigateTo('crop-health')" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold text-xs transition flex items-center space-x-1 shadow-sm">
+            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+            <span>Scan Crop</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SMART SELLING RECOMMENDATION PREVIEW CARD -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i>
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">SMART SELLING RECOMMENDATION</h4>
+          </div>
+          <span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">AI Optimal</span>
+        </div>
+
+        <div class="mt-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-[11px] text-slate-500 font-medium">Best Option For You</p>
+              <h5 class="text-base font-bold text-slate-900">Buyer B (Sharma Agro)</h5>
+            </div>
+            <div class="text-right">
+              <span class="text-lg font-extrabold text-emerald-700">₹2,550</span>
+              <span class="text-xs text-slate-500">/ Qtl</span>
+            </div>
+          </div>
+
+          <!-- Why this buyer points -->
+          <div class="mt-2.5 space-y-1 text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+            <p class="text-[11px] font-semibold text-slate-800 mb-1">Why this buyer?</p>
+            <div class="grid grid-cols-2 gap-1 text-[11px]">
+              <div class="flex items-center text-emerald-700 font-medium">
+                <i data-lucide="check" class="w-3 h-3 mr-1 text-emerald-600"></i> Higher effective price
+              </div>
+              <div class="flex items-center text-emerald-700 font-medium">
+                <i data-lucide="check" class="w-3 h-3 mr-1 text-emerald-600"></i> Good quantity match
+              </div>
+              <div class="flex items-center text-emerald-700 font-medium">
+                <i data-lucide="check" class="w-3 h-3 mr-1 text-emerald-600"></i> Nearby (15 km away)
+              </div>
+              <div class="flex items-center text-emerald-700 font-medium">
+                <i data-lucide="check" class="w-3 h-3 mr-1 text-emerald-600"></i> Verified Buyer ✓
+              </div>
+            </div>
+          </div>
+
+          <!-- Price & Transport Breakdown -->
+          <div class="mt-3 flex items-center justify-between text-xs px-1">
+            <div class="text-slate-500">
+              Quoted: <span class="font-semibold text-slate-800">₹2,550</span> | Transport: <span class="text-red-600 font-semibold">-₹100</span>
+            </div>
+            <div class="text-emerald-700 font-bold">
+              Net In-Hand: ₹2,450/Qtl
+            </div>
+          </div>
+
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <button onclick="openChatView('Buyer B (Sharma Agro)')" class="py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1">
+              <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Chat & Negotiate</span>
+            </button>
+            <button onclick="openSendOfferModal('Buyer B (Sharma Agro)', 'Wheat', 10, 2550)" class="py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1 shadow-sm">
+              <span>Send Direct Offer</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 2: AI CROP HEALTH SCAN SCREEN -->
+    <!-- ============================================================== -->
+    <section id="view-crop-health" class="hidden p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateTo('farmer-home')" class="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center space-x-1 text-xs font-medium">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Back to Dashboard</span>
+        </button>
+        <span class="text-xs font-bold text-slate-800">AI Crop Health Diagnostics</span>
+      </div>
+
+      <!-- Upload / Select Crop Image Card -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">Upload Crop Image for Disease & Pest Scan</h3>
+          <p class="text-xs text-slate-500">Capture or select a sample leaf/crop image to run instant AI vision inference.</p>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1.5">Select Sample Demo Image or Upload Custom:</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="selectScanSample('onion')" id="sample-btn-onion" class="sample-btn p-2 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-left transition">
+              <div class="w-full h-12 bg-amber-100 rounded-lg flex items-center justify-center text-xl mb-1">
+                🧅
+              </div>
+              <p class="text-[11px] font-bold text-slate-800 truncate">Onion Leaf</p>
+              <p class="text-[9px] text-red-600 font-semibold">Fungal Infestation</p>
+            </button>
+
+            <button onclick="selectScanSample('wheat')" id="sample-btn-wheat" class="sample-btn p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50 text-left transition">
+              <div class="w-full h-12 bg-amber-50 rounded-lg flex items-center justify-center text-xl mb-1">
+                🌾
+              </div>
+              <p class="text-[11px] font-bold text-slate-800 truncate">Wheat Rust</p>
+              <p class="text-[9px] text-amber-600 font-semibold">Yellow Rust</p>
+            </button>
+
+            <button onclick="selectScanSample('healthy')" id="sample-btn-healthy" class="sample-btn p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50 text-left transition">
+              <div class="w-full h-12 bg-emerald-100 rounded-lg flex items-center justify-center text-xl mb-1">
+                🌿
+              </div>
+              <p class="text-[11px] font-bold text-slate-800 truncate">Healthy Crop</p>
+              <p class="text-[9px] text-emerald-600 font-semibold">Grade A Ready</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Scanning Window Frame -->
+        <div class="relative bg-slate-900 rounded-2xl overflow-hidden h-48 flex items-center justify-center border border-slate-800" id="scan-frame-container">
+          <div id="scan-laser-line" class="scan-laser hidden"></div>
+          
+          <div id="scan-crop-visual" class="text-center p-4 text-white">
+            <div class="w-20 h-20 mx-auto rounded-2xl bg-amber-950/80 border border-amber-600/40 flex items-center justify-center text-4xl shadow-inner mb-2">
+              🧅
+            </div>
+            <span class="text-xs font-semibold text-emerald-400 block" id="scan-crop-name">Onion Leaf Specimen (Allium cepa)</span>
+            <span class="text-[10px] text-slate-400">Captured in Field #3 - Meerut</span>
+          </div>
+
+          <div id="scan-overlay-loading" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-2">
+            <div class="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-xs font-semibold text-emerald-300">Neural Network Inference Running...</p>
+            <p class="text-[10px] text-slate-400">Preprocessing 512x512 feature vectors</p>
+          </div>
+        </div>
+
+        <button id="run-ai-scan-btn" onclick="executeAIScan()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md flex items-center justify-center space-x-2 transition">
+          <i data-lucide="scan-line" class="w-4 h-4"></i>
+          <span>Run AI Crop Diagnostic Scan</span>
+        </button>
+      </div>
+
+      <!-- AI ANALYSIS RESULTS CARD -->
+      <div id="ai-scan-results" class="bg-white rounded-2xl p-4 border-2 border-emerald-500 shadow-md space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">AI ANALYSIS RESULT</h4>
+          </div>
+          <span id="res-confidence-badge" class="bg-emerald-100 text-emerald-800 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">
+            Confidence: 94%
+          </span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-slate-50 p-2.5 rounded-xl">
+            <span class="text-[10px] text-slate-500 font-semibold block">Crop:</span>
+            <span class="font-bold text-slate-900 text-sm" id="res-crop">Onion</span>
+          </div>
+
+          <div class="bg-slate-50 p-2.5 rounded-xl">
+            <span class="text-[10px] text-slate-500 font-semibold block">Detected Condition:</span>
+            <span class="font-bold text-red-600 text-sm" id="res-condition">Early Fungal Infection</span>
+          </div>
+
+          <div class="bg-slate-50 p-2.5 rounded-xl">
+            <span class="text-[10px] text-slate-500 font-semibold block">Severity Level:</span>
+            <span class="font-bold text-amber-600 text-xs flex items-center" id="res-severity">
+              <i data-lucide="alert-triangle" class="w-3 h-3 mr-1"></i> Medium
+            </span>
+          </div>
+
+          <div class="bg-slate-50 p-2.5 rounded-xl">
+            <span class="text-[10px] text-slate-500 font-semibold block">Affected Area:</span>
+            <span class="font-bold text-slate-800 text-xs" id="res-area">Leaf surface (12%)</span>
+          </div>
+        </div>
+
+        <!-- Recommendation Box -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs space-y-1">
+          <p class="font-bold text-amber-900 flex items-center">
+            <i data-lucide="info" class="w-3.5 h-3.5 mr-1 text-amber-700"></i> Farmer Recommendation:
+          </p>
+          <p class="text-amber-800 text-[11px] leading-relaxed" id="res-recommendation">
+            "Early intervention recommended. Monitor affected leaves and follow appropriate crop-management guidance. Apply Copper Oxychloride (2.5g/L) or Trichoderma viride. Avoid overhead irrigation."
+          </p>
+        </div>
+
+        <div class="p-2.5 bg-slate-100 rounded-xl border border-slate-200 text-[10px] text-slate-600 flex items-start space-x-2">
+          <i data-lucide="shield-alert" class="w-4 h-4 text-slate-500 shrink-0 mt-0.5"></i>
+          <div>
+            <strong class="text-slate-800">AI-assisted preliminary assessment:</strong> This diagnosis is intended for early decision support and does not replace certified laboratory or agricultural extension officer verification.
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button onclick="showReportModal()" class="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold transition text-center">
+            View Detailed Report
+          </button>
+          <button onclick="navigateTo('find-buyers')" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition text-center shadow-sm flex items-center justify-center space-x-1">
+            <span>Find Suitable Buyers</span>
+            <i data-lucide="arrow-right" class="w-3 h-3"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 3: CROP LISTING SCREEN (ADD / LIST YOUR CROP) -->
+    <!-- ============================================================== -->
+    <section id="view-crop-listing" class="hidden p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateTo('farmer-home')" class="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center space-x-1 text-xs font-medium">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Back</span>
+        </button>
+        <span class="text-xs font-bold text-slate-800">Crop Inventory & Listing</span>
+      </div>
+
+      <!-- Add / List Form -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+          <h3 class="text-sm font-bold text-slate-900 flex items-center">
+            <i data-lucide="plus-circle" class="w-4 h-4 mr-1.5 text-emerald-600"></i>
+            ADD / LIST YOUR CROP
+          </h3>
+          <span class="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-semibold">Direct Mandi Link</span>
+        </div>
+
+        <form id="add-crop-form" onsubmit="handleCropListing(event)" class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1">Crop Name *</label>
+            <select id="listing-crop-name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none">
+              <option value="Wheat">Wheat (Gehun - Sharbati)</option>
+              <option value="Onion">Onion (Pyaz - Nashik Red)</option>
+              <option value="Mustard">Mustard (Sarson - Pusa Bold)</option>
+              <option value="Potato">Potato (Aloo - Kufri Jyoti)</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-1">Quantity *</label>
+              <input type="number" id="listing-qty" value="10" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-1">Unit *</label>
+              <select id="listing-unit" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none">
+                <option value="Quintal">Quintal (100 kg)</option>
+                <option value="Tons">Metric Tons</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-1">Quality / Grade *</label>
+              <select id="listing-grade" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none">
+                <option value="Grade A">Grade A (Premium)</option>
+                <option value="Grade B">Grade B (Standard)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-1">Expected Price (₹/Unit) *</label>
+              <input type="number" id="listing-price" value="2550" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none" />
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md transition flex items-center justify-center space-x-2">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>List Crop on Market</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- YOUR ACTIVE LISTINGS SECTION -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">YOUR ACTIVE LISTINGS</h3>
+          <span class="text-[11px] text-emerald-700 font-semibold">2 Active Produce</span>
+        </div>
+
+        <div id="farmer-listings-container" class="space-y-3">
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm relative">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl">🌾</div>
+                <div>
+                  <h4 class="text-sm font-bold text-slate-900">Wheat (Gehun - Sharbati)</h4>
+                  <p class="text-xs text-slate-500">10 Quintal • Grade A • Meerut, UP</p>
+                </div>
+              </div>
+              <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">Active</span>
+            </div>
+
+            <div class="mt-3 pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
+              <div class="bg-slate-50 p-2 rounded-lg">
+                <span class="text-[10px] text-slate-500">Matched Buyers:</span>
+                <p class="font-bold text-slate-800 text-sm flex items-center text-emerald-700">
+                  <i data-lucide="users" class="w-3.5 h-3.5 mr-1"></i> 4 Verified
+                </p>
+              </div>
+              <div class="bg-slate-50 p-2 rounded-lg">
+                <span class="text-[10px] text-slate-500">Best Current Offer:</span>
+                <p class="font-extrabold text-emerald-700 text-sm">₹2,550 / Qtl</p>
+              </div>
+            </div>
+
+            <div class="mt-3 flex items-center space-x-2">
+              <button onclick="navigateTo('find-buyers')" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition text-center shadow-sm">
+                View Matched Buyers
+              </button>
+              <button onclick="openChatView('Buyer B (Sharma Agro)')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition flex items-center space-x-1">
+                <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-600"></i>
+                <span>Chat</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 4: MARKET PRICE DISCOVERY SCREEN -->
+    <!-- ============================================================== -->
+    <section id="view-market-prices" class="hidden p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateTo('farmer-home')" class="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center space-x-1 text-xs font-medium">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Back</span>
+        </button>
+        <span class="text-xs font-bold text-slate-800">Mandi Price Discovery</span>
+      </div>
+
+      <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm space-y-2.5">
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] text-slate-500 font-medium mb-1">Crop</label>
+            <select id="market-filter-crop" onchange="updateMarketPriceView()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs font-medium outline-none">
+              <option value="Wheat">Wheat</option>
+              <option value="Onion">Onion</option>
+              <option value="Mustard">Mustard</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500 font-medium mb-1">Location</label>
+            <select id="market-filter-loc" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs font-medium outline-none">
+              <option value="Meerut">Meerut Hub</option>
+              <option value="Delhi">Delhi APMC</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-500 font-medium mb-1">Date</label>
+            <select class="w-full bg-slate-50 border border-slate-200 rounded-lg p-1.5 text-xs font-medium outline-none">
+              <option value="today">Today (Live)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mandi / Buyer Comparison Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <h4 class="text-xs font-bold text-slate-900">Market / Buyer Comparison</h4>
+          <span class="text-[10px] text-slate-500">Sorted by Best Net Value</span>
+        </div>
+
+        <div class="divide-y divide-slate-100 text-xs">
+          <div class="p-3 bg-emerald-50/50 flex items-center justify-between">
+            <div>
+              <div class="flex items-center space-x-1.5">
+                <span class="font-bold text-slate-900">Buyer B (Sharma Agro)</span>
+                <span class="bg-emerald-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded">Recommended</span>
+              </div>
+              <p class="text-[11px] text-slate-500">Private Wholesaler • Distance: <strong>15 km</strong></p>
+            </div>
+            <div class="text-right">
+              <span class="text-sm font-extrabold text-emerald-700">₹2,550</span>
+              <span class="text-[10px] text-slate-500 block">/ Quintal</span>
+            </div>
+          </div>
+
+          <div class="p-3 flex items-center justify-between">
+            <div>
+              <span class="font-bold text-slate-900">Mandi C (Muzaffarnagar APMC)</span>
+              <p class="text-[11px] text-slate-500">Govt APMC Yard • Distance: <strong>52 km</strong></p>
+            </div>
+            <div class="text-right">
+              <span class="text-sm font-bold text-slate-800">₹2,500</span>
+              <span class="text-[10px] text-slate-500 block">/ Quintal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 5: SMART RECOMMENDATION DETAILS SCREEN -->
+    <!-- ============================================================== -->
+    <section id="view-smart-recommendation" class="hidden p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateTo('farmer-home')" class="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center space-x-1 text-xs font-medium">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Back</span>
+        </button>
+        <span class="text-xs font-bold text-slate-800">Smart Selling Recommendation</span>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-4">
+        <div class="text-center pb-2 border-b border-slate-100">
+          <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+            Best Option For You
+          </span>
+          <h3 class="text-lg font-bold text-slate-900 mt-2">Buyer B (Sharma Agro Wholesalers)</h3>
+          <p class="text-xs text-slate-500">Meerut Industrial Area • 15 km away</p>
+        </div>
+
+        <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 space-y-2 text-xs">
+          <div class="flex justify-between items-center text-slate-600">
+            <span>Quoted Purchase Price:</span>
+            <span class="font-bold text-slate-900">₹2,550 / Qtl</span>
+          </div>
+          <div class="flex justify-between items-center text-red-600">
+            <span>Estimated Transport (15 km):</span>
+            <span class="font-bold">- ₹100 / Qtl</span>
+          </div>
+          <div class="pt-2 border-t border-slate-200 flex justify-between items-center text-sm">
+            <span class="font-bold text-emerald-900">Effective In-Hand Net Price:</span>
+            <span class="font-extrabold text-emerald-700 text-base">₹2,450 / Qtl</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-2">
+          <button onclick="openChatView('Buyer B (Sharma Agro)')" class="py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-xs shadow-sm transition flex items-center justify-center space-x-1">
+            <i data-lucide="message-square" class="w-4 h-4 text-emerald-600"></i>
+            <span>Chat & Negotiate</span>
+          </button>
+          <button onclick="openSendOfferModal('Buyer B (Sharma Agro)', 'Wheat', 10, 2550)" class="py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md transition flex items-center justify-center space-x-1">
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span>Send Direct Offer</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 6: FIND BUYERS / BUYER MARKETPLACE SCREEN (FARMER SIDE) -->
+    <!-- ============================================================== -->
+    <section id="view-find-buyers" class="hidden p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateTo('farmer-home')" class="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center space-x-1 text-xs font-medium">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Back</span>
+        </button>
+        <span class="text-xs font-bold text-slate-800">Verified Buyer Marketplace</span>
+      </div>
+
+      <!-- Buyer Cards Directory -->
+      <div class="space-y-3">
+        <!-- BUYER B -->
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+          <div class="flex items-start justify-between">
+            <div>
+              <div class="flex items-center space-x-1.5">
+                <h4 class="text-sm font-bold text-slate-900">BUYER B (Sharma Agro)</h4>
+                <span class="text-emerald-600 text-xs" title="Verified Buyer">✓</span>
+              </div>
+              <p class="text-[11px] text-slate-500">Verified Wholesaler • Rating: 4.8★</p>
+            </div>
+            <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">High Demand</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl">
+            <div>
+              <span class="text-[10px] text-slate-500 block">Required:</span>
+              <span class="font-bold text-slate-900">50 Quintal</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-500 block">Offered:</span>
+              <span class="font-extrabold text-emerald-700">₹2,600 / Qtl</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-500 block">Distance:</span>
+              <span class="font-semibold text-slate-800">25 km</span>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button onclick="openChatView('Buyer B (Sharma Agro)')" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold transition flex items-center space-x-1">
+              <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Chat</span>
+            </button>
+            <button onclick="openSendOfferModal('Buyer B (Sharma Agro)', 'Wheat', 10, 2600)" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition text-center shadow-sm">
+              Send Offer
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 7: WEATHER INTELLIGENCE SCREEN -->
+    <!-- ============================================================== -->
+    <section id="view-weather" class="hidden p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateTo('farmer-home')" class="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center space-x-1 text-xs font-medium">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Back</span>
+        </button>
+        <span class="text-xs font-bold text-slate-800">Agro-Weather Intelligence</span>
+      </div>
+
+      <div class="bg-gradient-to-br from-sky-600 via-sky-700 to-blue-800 text-white rounded-2xl p-4 shadow-md space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-bold">Meerut, Uttar Pradesh</h3>
+            <p class="text-xs text-sky-200">Today's Agro-Weather Condition</p>
+          </div>
+          <span class="bg-sky-950/60 text-sky-200 px-2 py-0.5 rounded-full text-[10px] font-bold border border-sky-400/30">Live Feed</span>
+        </div>
+
+        <div class="flex items-center justify-between py-2">
+          <div class="flex items-center space-x-3">
+            <span class="text-4xl">⛅</span>
+            <div>
+              <span class="text-3xl font-extrabold">29°C</span>
+              <p class="text-xs text-sky-100 font-medium">Partly Cloudy</p>
+            </div>
+          </div>
+          <div class="text-right text-xs space-y-1">
+            <p class="text-sky-200">Rain Probability: <strong class="text-white text-sm">40%</strong></p>
+            <p class="text-sky-200">Humidity: <strong class="text-white">72%</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-amber-50 border-2 border-amber-400/60 rounded-2xl p-3.5 space-y-2">
+        <div class="flex items-center space-x-2 text-amber-900">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
+          <h4 class="text-xs font-extrabold uppercase tracking-wider">FARM ALERT & ADVISORY</h4>
+        </div>
+        <p class="text-xs text-amber-900 font-medium leading-relaxed">
+          "Rain probability is increasing over the next few days. Consider checking crop readiness and dispatch availability."
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 8: MY ORDERS SCREEN & TIMELINE -->
+    <!-- ============================================================== -->
+    <section id="view-my-orders" class="hidden p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateTo('farmer-home')" class="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center space-x-1 text-xs font-medium">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Back</span>
+        </button>
+        <span class="text-xs font-bold text-slate-800">Order Management</span>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="flex items-center space-x-2">
+              <h4 class="text-sm font-bold text-slate-900" id="order-id-label">Order #ORD1234</h4>
+              <span id="order-status-badge" class="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                Offer Sent
+              </span>
+            </div>
+            <p class="text-xs text-slate-500">Buyer: <strong class="text-slate-800" id="order-buyer-label">Buyer B (Sharma Agro)</strong></p>
+          </div>
+          <div class="text-right">
+            <span class="text-sm font-extrabold text-emerald-700" id="order-total-label">₹25,500</span>
+            <span class="text-[10px] text-slate-400 block">Total Value</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl">
+          <div>
+            <span class="text-[10px] text-slate-500 block">Crop & Quantity:</span>
+            <span class="font-bold text-slate-800" id="order-crop-qty">Wheat • 10 Quintal</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-500 block">Price Agreed:</span>
+            <span class="font-bold text-slate-800" id="order-price-unit">₹2,550 / Quintal</span>
+          </div>
+        </div>
+
+        <!-- 4-STAGE TIMELINE TRACKER -->
+        <div class="pt-2">
+          <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Fulfillment Progress</p>
+          <div class="relative flex items-center justify-between text-center">
+            <div class="absolute top-3 left-4 right-4 h-0.5 bg-slate-200 -z-0"></div>
+            
+            <div class="relative z-10 flex flex-col items-center">
+              <div id="step-1-dot" class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-bold ring-4 ring-emerald-100">✓</div>
+              <span class="text-[9px] font-bold text-emerald-800 mt-1">Offer Sent</span>
+            </div>
+
+            <div class="relative z-10 flex flex-col items-center">
+              <div id="step-2-dot" class="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[10px] font-bold">2</div>
+              <span class="text-[9px] font-medium text-slate-500 mt-1">Accepted</span>
+            </div>
+
+            <div class="relative z-10 flex flex-col items-center">
+              <div id="step-3-dot" class="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[10px] font-bold">3</div>
+              <span class="text-[9px] font-medium text-slate-500 mt-1">In Transit</span>
+            </div>
+
+            <div class="relative z-10 flex flex-col items-center">
+              <div id="step-4-dot" class="w-6 h-6 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[10px] font-bold">4</div>
+              <span class="text-[9px] font-medium text-slate-500 mt-1">Completed</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+          <button onclick="advanceDemoOrderStatus()" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg font-semibold flex items-center space-x-1">
+            <i data-lucide="play-circle" class="w-3 h-3 text-emerald-600"></i>
+            <span>Advance Status (Judge Demo)</span>
+          </button>
+          <button onclick="openChatView('Buyer B (Sharma Agro)')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm flex items-center space-x-1">
+            <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+            <span>Chat Buyer</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 9: FARMER PROFILE SCREEN -->
+    <!-- ============================================================== -->
+    <section id="view-farmer-profile" class="hidden p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateTo('farmer-home')" class="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center space-x-1 text-xs font-medium">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Back</span>
+        </button>
+        <span class="text-xs font-bold text-slate-800">Farmer Digital Identity</span>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center relative overflow-hidden">
+        <div class="w-16 h-16 mx-auto rounded-full bg-emerald-100 border-3 border-emerald-600 flex items-center justify-center text-2xl font-bold text-emerald-800 mb-2">R</div>
+        <h3 class="text-base font-bold text-slate-900">Ramesh Kumar</h3>
+        <p class="text-xs text-slate-500 flex items-center justify-center mt-0.5">
+          <i data-lucide="map-pin" class="w-3 h-3 mr-1 text-emerald-600"></i> Meerut Cluster, UP
+        </p>
+        <div class="mt-3 inline-flex items-center space-x-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full text-xs text-emerald-800 font-semibold">
+          <i data-lucide="badge-check" class="w-4 h-4 text-emerald-600"></i>
+          <span>Aadhaar & Land Record Verified ✓</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 10: BUYER PORTAL DASHBOARD (BUYER SIDE) -->
+    <!-- ============================================================== -->
+    <section id="view-buyer-dashboard" class="hidden p-4 space-y-4">
+      <!-- Buyer Header -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-11 h-11 rounded-xl bg-slate-900 text-emerald-400 font-bold flex items-center justify-center text-lg shadow-sm">
+            🏢
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Hello, Sharma Agro (Buyer B)</h2>
+            <p class="text-xs text-slate-500 flex items-center">
+              <span class="text-emerald-600 font-semibold mr-1">Verified Wholesaler ✓</span> • Meerut Hub
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-1.5">
+          <button onclick="openChatView('Ramesh Kumar (Farmer)')" class="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:text-emerald-600 shadow-sm transition" title="Direct Chat">
+            <i data-lucide="message-square" class="w-4 h-4"></i>
+          </button>
+          <button onclick="switchPersona('farmer')" title="Switch back to Farmer View" class="p-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-slate-200 transition flex items-center space-x-1">
+            <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
+            <span class="text-[10px]">Farmer</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Cards -->
+      <div class="grid grid-cols-2 gap-2.5 text-xs">
+        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-[10px] text-slate-500 font-semibold block">Active Requirements</span>
+          <span class="text-lg font-extrabold text-slate-900">3 Posts</span>
+          <span class="text-[10px] text-emerald-600 block mt-0.5">80 Qtl Total Demand</span>
+        </div>
+        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm">
+          <span class="text-[10px] text-slate-500 font-semibold block">Pending Offers</span>
+          <span class="text-lg font-extrabold text-amber-600">2 Received</span>
+          <span class="text-[10px] text-slate-500 block mt-0.5">Awaiting Review</span>
+        </div>
+      </div>
+
+      <!-- Main Action: Post New Requirement -->
+      <button onclick="navigateTo('buyer-requirements')" class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs shadow-md flex items-center justify-center space-x-2 transition">
+        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+        <span>Post New Crop Requirement</span>
+      </button>
+
+      <!-- AI BUYER-FARMER MATCHING SPOTLIGHT CARD -->
+      <div class="bg-gradient-to-br from-emerald-900 to-slate-900 text-white rounded-2xl p-4 shadow-md space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center">
+            <i data-lucide="sparkles" class="w-3 h-3 mr-1 text-emerald-400"></i> AI MATCH FOUND
+          </span>
+          <span class="text-sm font-extrabold text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-600/40">
+            96% Compatibility
+          </span>
+        </div>
+
+        <div class="flex items-start justify-between">
+          <div>
+            <h4 class="text-base font-bold text-white">Farmer: Ramesh Kumar</h4>
+            <p class="text-xs text-emerald-200">Produce: <strong>Wheat (Sharbati) • 10 Quintal</strong></p>
+            <p class="text-[11px] text-slate-300">Quality: Grade A • Location: 15 km away</p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-slate-300 block">Expected:</span>
+            <span class="text-base font-bold text-emerald-300">₹2,550 / Qtl</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button onclick="openChatView('Ramesh Kumar (Farmer)')" class="py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl font-semibold text-xs transition flex items-center justify-center space-x-1 border border-white/20">
+            <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Chat with Ramesh</span>
+          </button>
+          <button onclick="sendBuyerPurchaseOffer('Ramesh Kumar', 'Wheat', 10, 2550)" class="py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-bold text-xs shadow transition flex items-center justify-center space-x-1">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            <span>Lock Deal Offer</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- BUYER DISCOVERY: FARMER PRODUCE LISTINGS -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">AVAILABLE FARMER PRODUCE</h3>
+          <span class="text-[11px] text-emerald-700 font-semibold">Live Farmer Listings</span>
+        </div>
+
+        <div class="space-y-3">
+          <!-- Listing 1: Ramesh -->
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center space-x-1.5">
+                  <h4 class="text-sm font-bold text-slate-900">Wheat (Sharbati)</h4>
+                  <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.2 rounded">Match: 96%</span>
+                </div>
+                <p class="text-xs text-slate-500">Farmer: Ramesh Kumar • 10 Quintal • Grade A • Meerut</p>
+              </div>
+              <span class="bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-200">
+                Harvest Ready
+              </span>
+            </div>
+
+            <div class="flex items-center space-x-2 text-[11px] bg-slate-50 p-2 rounded-xl">
+              <span class="text-emerald-700 font-bold flex items-center">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 mr-1 text-emerald-600"></i> AI Crop Health: Healthy ✓ (94%)
+              </span>
+              <span class="text-slate-400">|</span>
+              <span class="text-slate-600">Price: ₹2,550/Qtl</span>
+            </div>
+
+            <!-- View Produce opens dedicated Produce Detail Modal + Direct Chat -->
+            <div class="flex items-center space-x-2 pt-1">
+              <button onclick="openProduceDetailsModal('Ramesh Kumar', 'Wheat (Sharbati)', '10 Quintal', 'Grade A Premium', 'Healthy ✓ (94% AI Clean)', '₹2,550 / Qtl', 'Meerut (15 km)', 'Field #3, Daurala Block')" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-sm flex items-center justify-center space-x-1">
+                <i data-lucide="eye" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>View Produce Details</span>
+              </button>
+              <button onclick="openChatView('Ramesh Kumar (Farmer)')" class="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold transition flex items-center space-x-1">
+                <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-600"></i>
+                <span>Chat</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Listing 2: Suresh Patel (Onion) -->
+          <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-2.5">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center space-x-1.5">
+                  <h4 class="text-sm font-bold text-slate-900">Onion (Nashik Red)</h4>
+                  <span class="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.2 rounded">Match: 88%</span>
+                </div>
+                <p class="text-xs text-slate-500">Farmer: Suresh Patel • 20 Quintal • Grade A • Hapur</p>
+              </div>
+              <span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                Stored Lot
+              </span>
+            </div>
+
+            <div class="flex items-center space-x-2 text-[11px] bg-slate-50 p-2 rounded-xl">
+              <span class="text-amber-700 font-bold flex items-center">
+                <i data-lucide="alert-circle" class="w-3.5 h-3.5 mr-1 text-amber-600"></i> AI Crop Health: Mild Spotting
+              </span>
+              <span class="text-slate-400">|</span>
+              <span class="text-slate-600">Price: ₹1,950/Qtl</span>
+            </div>
+
+            <div class="flex items-center space-x-2 pt-1">
+              <button onclick="openProduceDetailsModal('Suresh Patel', 'Onion (Nashik Red)', '20 Quintal', 'Grade A Standard', 'Mild Spotting - Early Fungal Monitored', '₹1,950 / Qtl', 'Hapur (32 km)', 'Storage Shed #2, Pilkhuwa')" class="flex-1 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-sm flex items-center justify-center space-x-1">
+                <i data-lucide="eye" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>View Produce Details</span>
+              </button>
+              <button onclick="openChatView('Suresh Patel (Farmer)')" class="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold transition flex items-center space-x-1">
+                <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-600"></i>
+                <span>Chat</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 11: BUYER REQUIREMENTS SCREEN -->
+    <!-- ============================================================== -->
+    <section id="view-buyer-requirements" class="hidden p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateTo('buyer-dashboard')" class="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center space-x-1 text-xs font-medium">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Back</span>
+        </button>
+        <span class="text-xs font-bold text-slate-800">Buyer Requirements</span>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3">
+        <h3 class="text-sm font-bold text-slate-900">POST BUYER REQUIREMENT</h3>
+        <form onsubmit="handlePostRequirement(event)" class="space-y-3">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-700 mb-1">Crop *</label>
+            <select id="req-crop" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none">
+              <option value="Wheat">Wheat (Food Grade)</option>
+              <option value="Onion">Onion (Medium/Large Bulb)</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-1">Required Quantity (Qtl) *</label>
+              <input type="number" id="req-qty" value="50" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-1">Quality / Grade *</label>
+              <select id="req-grade" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none">
+                <option value="Grade A">Grade A</option>
+                <option value="Grade B">Grade B</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-1">Maximum Price (₹/Qtl) *</label>
+              <input type="number" id="req-max-price" value="2600" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-700 mb-1">Required Date</label>
+              <input type="date" value="2026-09-10" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium outline-none" />
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md transition">
+            Post Requirement
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 12: BUYER PROFILE SCREEN -->
+    <!-- ============================================================== -->
+    <section id="view-buyer-profile" class="hidden p-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <button onclick="navigateTo('buyer-dashboard')" class="p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center space-x-1 text-xs font-medium">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Back</span>
+        </button>
+        <span class="text-xs font-bold text-slate-800">Buyer Enterprise Profile</span>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm text-center space-y-2">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-slate-900 text-emerald-400 flex items-center justify-center text-3xl font-bold mb-1 shadow-md">
+          🏢
+        </div>
+        <h3 class="text-base font-bold text-slate-900">Sharma Agro Enterprises (Buyer B)</h3>
+        <p class="text-xs text-slate-500">GST: 09AAACS8721N1Z5 • Meerut Hub, UP</p>
+        <div class="inline-flex items-center space-x-1.5 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full text-xs text-emerald-800 font-semibold">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+          <span>Government APMC & GST Verified Enterprise</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 13: DIRECT BUYER ⇄ FARMER CHAT & NEGOTIATION SCREEN -->
+    <!-- ============================================================== -->
+    <section id="view-direct-chat" class="hidden p-3 flex flex-col h-[calc(100vh-110px)] max-h-[720px]">
+      <!-- Chat Header -->
+      <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between shrink-0 mb-2">
+        <div class="flex items-center space-x-2.5">
+          <button onclick="exitChatView()" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          </button>
+          <div class="relative">
+            <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs" id="chat-partner-avatar">
+              R
+            </div>
+            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-slate-900" id="chat-partner-name">Ramesh Kumar (Farmer)</h4>
+            <p class="text-[10px] text-emerald-600 flex items-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse"></span> Online • Verified Direct Deal
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-1">
+          <button onclick="showToast('Calling Farmer: +91 98765 12345')" class="p-2 rounded-xl bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 transition" title="Audio Call">
+            <i data-lucide="phone" class="w-3.5 h-3.5"></i>
+          </button>
+          <button onclick="showToast('Deal parameters locked for e-Sign')" class="p-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition" title="Lock Deal">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Deal Summary Banner Inside Chat -->
+      <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between text-xs mb-2 shrink-0">
+        <div>
+          <span class="text-[10px] text-emerald-800 font-semibold block">Produce in Discussion:</span>
+          <span class="font-bold text-slate-900 text-xs">Wheat (Sharbati) • 10 Qtl • ₹2,550/Qtl</span>
+        </div>
+        <button onclick="acceptDealInChat()" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[10px] shadow-sm">
+          Lock Deal
+        </button>
+      </div>
+
+      <!-- Chat Messages Container -->
+      <div id="chat-messages-box" class="flex-1 bg-slate-100/70 rounded-2xl p-3 border border-slate-200 overflow-y-auto space-y-2.5 text-xs">
+        <!-- Farmer Message -->
+        <div class="flex items-start space-x-2">
+          <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0">R</div>
+          <div class="bg-white p-2.5 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm max-w-[80%] space-y-1">
+            <p class="text-slate-800 font-medium">Namaste Sharma ji. Maine 10 Quintal Sharbati Gehun list kiya hai (Grade A verified, 94% AI Healthy).</p>
+            <span class="text-[9px] text-slate-400 block text-right">10:30 AM</span>
+          </div>
+        </div>
+
+        <!-- Buyer Message -->
+        <div class="flex items-start justify-end space-x-2">
+          <div class="bg-emerald-600 text-white p-2.5 rounded-2xl rounded-tr-none shadow-sm max-w-[80%] space-y-1">
+            <p class="font-medium">Namaste Ramesh ji. Kya aap ₹2,550/Qtl me Meerut Industrial warehouse par deliver kar sakte hain?</p>
+            <span class="text-[9px] text-emerald-200 block text-right">10:32 AM</span>
+          </div>
+          <div class="w-6 h-6 rounded-full bg-slate-900 text-emerald-400 flex items-center justify-center text-[9px] font-bold shrink-0">B</div>
+        </div>
+
+        <!-- Farmer Message -->
+        <div class="flex items-start space-x-2">
+          <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] font-bold shrink-0">R</div>
+          <div class="bg-white p-2.5 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm max-w-[80%] space-y-1">
+            <p class="text-slate-800 font-medium">Haan ji, mini-truck se kal subah 10 baje bhej dunga. Total amount ₹25,500 ban raha hai.</p>
+            <span class="text-[9px] text-slate-400 block text-right">10:35 AM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Suggested Replies -->
+      <div class="flex items-center space-x-1.5 overflow-x-auto py-1.5 shrink-0 text-[10px]">
+        <button onclick="sendQuickReply('Deal confirmed! Order dispatching tomorrow.')" class="px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-full hover:border-emerald-500 shrink-0">
+          ✓ Confirm Deal
+        </button>
+        <button onclick="sendQuickReply('Can you supply 20 Quintals instead of 10?')" class="px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-full hover:border-emerald-500 shrink-0">
+          Need more quantity
+        </button>
+        <button onclick="sendQuickReply('Payment will be credited via instant DBT on delivery.')" class="px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-full hover:border-emerald-500 shrink-0">
+          💳 Instant DBT Payment
+        </button>
+      </div>
+
+      <!-- Chat Input Form -->
+      <form onsubmit="handleSendMessage(event)" class="mt-1 flex items-center space-x-2 shrink-0">
+        <input type="text" id="chat-input-text" placeholder="Type direct message to negotiate..." class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm" />
+        <button type="submit" class="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition shadow-sm">
+          <i data-lucide="send" class="w-4 h-4"></i>
+        </button>
+      </form>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- BOTTOM NAVIGATION (FARMER & BUYER ADAPTIVE) -->
+    <!-- ============================================================== -->
+    <nav id="bottom-nav" class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-2 py-2 flex items-center justify-around z-40 shadow-lg">
+      <div id="nav-farmer-items" class="flex items-center justify-around w-full">
+        <button onclick="navigateTo('farmer-home')" id="nav-btn-home" class="nav-item-btn flex flex-col items-center text-emerald-700 font-bold transition">
+          <i data-lucide="home" class="w-4 h-4"></i>
+          <span class="text-[10px] mt-0.5">Home</span>
+        </button>
+        <button onclick="navigateTo('crop-listing')" id="nav-btn-crops" class="nav-item-btn flex flex-col items-center text-slate-500 hover:text-emerald-600 transition">
+          <i data-lucide="sprout" class="w-4 h-4"></i>
+          <span class="text-[10px] mt-0.5">Crops</span>
+        </button>
+        <button onclick="navigateTo('find-buyers')" id="nav-btn-buyers" class="nav-item-btn flex flex-col items-center text-slate-500 hover:text-emerald-600 transition">
+          <i data-lucide="building-2" class="w-4 h-4"></i>
+          <span class="text-[10px] mt-0.5">Buyers</span>
+        </button>
+        <button onclick="navigateTo('my-orders')" id="nav-btn-orders" class="nav-item-btn flex flex-col items-center text-slate-500 hover:text-emerald-600 transition relative">
+          <span class="absolute -top-1 right-2 w-2 h-2 bg-emerald-500 rounded-full"></span>
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          <span class="text-[10px] mt-0.5">Orders</span>
+        </button>
+        <button onclick="navigateTo('farmer-profile')" id="nav-btn-profile" class="nav-item-btn flex flex-col items-center text-slate-500 hover:text-emerald-600 transition">
+          <i data-lucide="user" class="w-4 h-4"></i>
+          <span class="text-[10px] mt-0.5">Profile</span>
+        </button>
+      </div>
+
+      <div id="nav-buyer-items" class="hidden flex items-center justify-around w-full">
+        <button onclick="navigateTo('buyer-dashboard')" id="nav-btn-buyer-home" class="nav-item-btn flex flex-col items-center text-emerald-700 font-bold transition">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <span class="text-[10px] mt-0.5">Dashboard</span>
+        </button>
+        <button onclick="navigateTo('buyer-requirements')" id="nav-btn-buyer-req" class="nav-item-btn flex flex-col items-center text-slate-500 hover:text-emerald-600 transition">
+          <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+          <span class="text-[10px] mt-0.5">Requirements</span>
+        </button>
+        <button onclick="openChatView('Ramesh Kumar (Farmer)')" id="nav-btn-buyer-chat" class="nav-item-btn flex flex-col items-center text-slate-500 hover:text-emerald-600 transition relative">
+          <span class="absolute -top-1 right-2 w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
+          <i data-lucide="message-square" class="w-4 h-4"></i>
+          <span class="text-[10px] mt-0.5">Chats</span>
+        </button>
+        <button onclick="navigateTo('my-orders')" id="nav-btn-buyer-orders" class="nav-item-btn flex flex-col items-center text-slate-500 hover:text-emerald-600 transition">
+          <i data-lucide="package" class="w-4 h-4"></i>
+          <span class="text-[10px] mt-0.5">Orders</span>
+        </button>
+        <button onclick="navigateTo('buyer-profile')" id="nav-btn-buyer-profile" class="nav-item-btn flex flex-col items-center text-slate-500 hover:text-emerald-600 transition">
+          <i data-lucide="building" class="w-4 h-4"></i>
+          <span class="text-[10px] mt-0.5">Profile</span>
+        </button>
+      </div>
+    </nav>
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: DEDICATED PRODUCE DETAILS & INSPECTION MODAL (BUYER VIEW) -->
+  <!-- ============================================================== -->
+  <div id="modal-produce-details" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl border border-slate-200 space-y-3 animate-in fade-in zoom-in-95 duration-200">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900" id="prod-modal-crop">Wheat (Sharbati)</h3>
+          <p class="text-xs text-slate-500" id="prod-modal-farmer">Farmer: Ramesh Kumar • Meerut</p>
+        </div>
+        <button onclick="closeModal('modal-produce-details')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-2.5 text-xs">
+        <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl">
+          <div>
+            <span class="text-[10px] text-slate-500 block">Available Quantity:</span>
+            <span class="font-bold text-slate-900" id="prod-modal-qty">10 Quintal</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-500 block">Quality / Grade:</span>
+            <span class="font-extrabold text-emerald-700" id="prod-modal-grade">Grade A Premium</span>
+          </div>
+        </div>
+
+        <div class="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1">
+          <div class="flex items-center space-x-1 text-emerald-900 font-bold">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-600"></i>
+            <span>AI Crop Health & Inspection Status</span>
+          </div>
+          <p class="text-emerald-800 text-[11px]" id="prod-modal-health">Healthy ✓ (94% AI Clean Foliage)</p>
+          <span class="text-[9px] text-slate-500 block">Verified on-field before harvest readiness</span>
+        </div>
+
+        <div class="bg-slate-50 p-2.5 rounded-xl space-y-1">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Farmer Asking Price:</span>
+            <span class="font-bold text-slate-900" id="prod-modal-price">₹2,550 / Quintal</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Farm Location & Radius:</span>
+            <span class="font-semibold text-slate-800" id="prod-modal-loc">Daurala, Meerut (15 km)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 grid grid-cols-2 gap-2">
+        <button onclick="startChatFromProduceModal()" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1">
+          <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Chat & Negotiate</span>
+        </button>
+        <button onclick="sendPurchaseOrderDirect()" class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center justify-center space-x-1">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>Lock Purchase Order</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- MODAL: SEND OFFER TO BUYER (FARMER SIDE) -->
+  <!-- ============================================================== -->
+  <div id="modal-send-offer" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-5 max-w-sm w-full shadow-2xl border border-slate-200 space-y-3 animate-in fade-in zoom-in-95 duration-200">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div>
+          <h3 class="text-sm font-bold text-slate-900">SEND OFFER TO BUYER</h3>
+          <p class="text-xs text-slate-500" id="modal-offer-buyer-name">Buyer: Buyer B (Sharma Agro)</p>
+        </div>
+        <button onclick="closeModal('modal-send-offer')" class="p-1 rounded-lg text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl">
+          <div>
+            <span class="text-[10px] text-slate-500 block">Crop:</span>
+            <span class="font-bold text-slate-900" id="modal-offer-crop">Wheat</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-500 block">Farmer Quantity:</span>
+            <span class="font-bold text-slate-900" id="modal-offer-qty">10 Quintal</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-700 mb-1">Your Offer Price (₹/Quintal) *</label>
+          <input type="number" id="modal-input-offer-price" value="2550" oninput="recalcModalTotal()" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+
+        <div class="p-2.5 bg-slate-100 rounded-xl flex justify-between items-center text-xs">
+          <span class="font-bold text-slate-700">Estimated Total:</span>
+          <span class="text-sm font-extrabold text-emerald-700" id="modal-offer-total-calc">₹25,500</span>
+        </div>
+      </div>
+
+      <div class="pt-2 flex items-center space-x-2">
+        <button onclick="closeModal('modal-send-offer')" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition">
+          Cancel
+        </button>
+        <button onclick="submitFarmerOffer()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition">
+          Send Offer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <!-- Modular Application Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/services.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "agrivyn",
+  "version": "1.0.0",
+  "description": "AGriVyn – AI-Powered Farm-to-Market Intelligence Platform for Smart India Hackathon 2026",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve . -l 3000",
+    "dev": "serve . -l 3000",
+    "serve": "npx serve . -l 3000",
+    "python-serve": "python3 -m http.server 3000"
+  },
+  "keywords": [
+    "agritech",
+    "smart-india-hackathon-2026",
+    "sih-2026",
+    "ai-crop-health",
+    "mandi-prices",
+    "direct-procurement",
+    "farmer-buyer-chat"
+  ],
+  "author": "AGriVyn SIH Team",
+  "license": "MIT",
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
